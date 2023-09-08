@@ -3,7 +3,7 @@ object Form1: TForm1
   Top = 0
   Caption = 'Form1'
   ClientHeight = 424
-  ClientWidth = 356
+  ClientWidth = 352
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -11,6 +11,7 @@ object Form1: TForm1
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  OnCreate = Form1Create
   PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
@@ -95,17 +96,17 @@ object Form1: TForm1
     TabOrder = 0
   end
   object OKButton: TButton
-    Left = 200
-    Top = 383
+    Left = 179
+    Top = 373
     Width = 75
-    Height = 25
+    Height = 24
     Caption = 'OK'
     TabOrder = 1
     OnClick = OKButtonClick
   end
   object SearchButton: TButton
     Left = 264
-    Top = 37
+    Top = 41
     Width = 75
     Height = 25
     Caption = 'Search'
@@ -200,5 +201,18 @@ object Form1: TForm1
     Font.Style = []
     ParentFont = False
     TabOrder = 5
+  end
+  object CancelButton: TButton
+    Left = 265
+    Top = 373
+    Width = 75
+    Height = 24
+    Margins.Left = 2
+    Margins.Top = 2
+    Margins.Right = 2
+    Margins.Bottom = 2
+    Caption = 'Cancel'
+    TabOrder = 7
+    OnClick = CancelButtonClick
   end
 end
