@@ -121,9 +121,6 @@ begin
     Result := PCBServer.PCBObjectFactory(eEmbeddedBoardObject, eNoDimension, eCreate_Default);
     Result.DocumentPath := FileName;
 
-    xPanelOrigin := 11;
-    yPanelOrigin := 11;
-
     Result.RowCount := YCount;
     Result.ColCount := XCount;
 
@@ -133,8 +130,6 @@ begin
     Result.YLocation  := MmToMils(yPanelOrigin);
 
     PCB_Board.AddPCBObject(Result);
-
-    ShowMessage(MilsToMM(Result.RowSpacing));
 
 end;
 
@@ -638,7 +633,7 @@ var
 begin
     PCBServer.PreProcess;
     yTextPost := HeightPanel - yPanelOrigin + CoutoutWidth;
-    xTextPost := WidthPanel/2 - 1;
+    xTextPost := (WidthPanel - xPanelOrigin*2)/2;
     Location := Point(MmToMils(xTextPost), MmToMils(yTextPost));
 
     Title := PCBServer.PCBObjectFactory(eTextObject, eNoDimension, eCreate_Default);
