@@ -4,6 +4,8 @@ procedure calculatePanelDimensions;  forward;
 procedure CreatePCBDocument;   forward;
 procedure BasicViewLayers;   forward;
 procedure BoardLayerOnly;   forward;
+procedure PlacePolygonCutouts(PanelPCB : IPCB_Board);   forward; PlaceBoardTitle
+procedure PlaceBoardTitle(PanelPCB : IPCB_Board);   forward;
 procedure PlacePanelFiducials(PanelPCB : IPCB_Board);   forward;
 procedure PlacePanelPads (PanelPCB : IPCB_Board);   forward;
 procedure TForm1.SearchButtonClick(Sender: TObject); forward;
@@ -15,6 +17,10 @@ const
      eBoardTrackWidth = 10; // 10mils or 0,254mm
      eBoardLayer = 21;
      eTopLayer = 1;
+     cTextHeight   = 5;
+     cTextWidth    = 0.5;
+     cLineWidth    = 1;
+     CoutoutWidth = 2;
 
 var
     PCBBoard: IPCB_Board;
@@ -76,15 +82,6 @@ end;
 
 {...............................................................................}
 
-function SetEmbeddedBoardArray (EMB : IPCB_EmbeddedBoard, RowCnt : integer, ColCnt : integer) : boolean;
-begin
-    EMB.Setstate_RowCount(RowCnt);
-    EMB.Setstate_ColCount(ColCnt);
-    EMB.GraphicallyInvalidate;
-end;
-
-{...............................................................................}
-
 function GetEmbeddedBoards(ABoard : IPCB_Board) : TObjectList;
 Var
     EmbedObj   : IPCB_EmbeddedBoard;
@@ -124,15 +121,20 @@ begin
     Result := PCBServer.PCBObjectFactory(eEmbeddedBoardObject, eNoDimension, eCreate_Default);
     Result.DocumentPath := FileName;
 
-    Result.RowCount := XCount;
-    Result.ColCount := YCount;
+    xPanelOrigin := 11;
+    yPanelOrigin := 11;
+
+    Result.RowCount := YCount;
+    Result.ColCount := XCount;
 
     Result.ColSpacing := MmToMils( WidthMM + ColSpace);
     Result.RowSpacing := MmToMils( HeightMM + RowSpace);
-    Result.XLocation  := MmToMils(11);
-    Result.YLocation  := MmToMils(11);
+    Result.XLocation  := MmToMils(xPanelOrigin);
+    Result.YLocation  := MmToMils(yPanelOrigin);
 
     PCB_Board.AddPCBObject(Result);
+
+    ShowMessage(MilsToMM(Result.RowSpacing));
 
 end;
 
@@ -176,6 +178,7 @@ Begin
     Track1.Layer := ALayer;
     Track1.Width := MilsToCoord(eBoardTrackWidth);
     PanelPCB.AddPCBObject(Track1);
+    Track1.Selected := true;
 
     Track2 := PCBServer.PCBObjectFactory(eTrackObject, eNoDimension, eCreate_Default);
     Track2.x1 := MmToMils(WidthPanel);
@@ -185,6 +188,7 @@ Begin
     Track2.Layer := ALayer;
     Track2.Width := MilsToCoord(eBoardTrackWidth);
     PanelPCB.AddPCBObject(Track2);
+    Track2.Selected := true;
 
     Track3 := PCBServer.PCBObjectFactory(eTrackObject, eNoDimension, eCreate_Default);
     Track3.x1 := MmToMils(WidthPanel);
@@ -194,6 +198,7 @@ Begin
     Track3.Layer := ALayer;
     Track3.Width := MilsToCoord(eBoardTrackWidth);
     PanelPCB.AddPCBObject(Track3);
+    Track3.Selected := true;
 
     Track4 := PCBServer.PCBObjectFactory(eTrackObject, eNoDimension, eCreate_Default);
     Track4.x1 := 0;
@@ -203,29 +208,19 @@ Begin
     Track4.Layer := ALayer;
     Track4.Width := MilsToCoord(eBoardTrackWidth);
     PanelPCB.AddPCBObject(Track4);
-
-    PCBServer.PostProcess;
+    Track4.Selected := true;
 
     // Display (unconditionally) the layer selected by the user.
     PanelPCB.LayerIsDisplayed[ALayer] := True;
 
     // Refresh PCB workspace.
     ResetParameters();
-    AddStringParameter('Action', 'Redraw');
-    RunProcess('PCB:Zoom');
-
-    BoardLayerOnly;
-
-    ResetParameters();
-    AddStringParameter('Scope', 'Layer');
-    RunProcess('PCB:Select');
-
-    ResetParameters();
     AddStringParameter('Mode', 'BOARDOUTLINE_FROM_SEL_PRIMS');
     RunProcess('PCB:PlaceBoardOutline');
 
     BasicViewLayers;
 
+    PCBServer.PostProcess;
 End;
 
 procedure TForm1.SearchButtonClick(Sender: TObject);
@@ -280,6 +275,8 @@ begin
          AddEmbeddedBoard(PanelPCB_Board);
          PlacePanelPads(PanelPCB_Board);
          PlacePanelFiducials(PanelPCB_Board);
+         //PlacePolygonCutouts(PanelPCB_Board);
+         PlaceBoardTitle(PanelPCB_Board);
          Close;
 end;
 
@@ -596,4 +593,68 @@ begin
    PanelPCB.AddPCBObject(Fid1);
    PanelPCB.AddPCBObject(Fid2);
    PanelPCB.AddPCBObject(Fid3);
+end;
+
+procedure PlacePolygonCutouts (PanelPCB : IPCB_Board);
+var
+   PolyCut1    : IPCB_Region;
+   polygonSegment1, polygonSegment2, polygonSegment3, polygonSegment4  : TPolySegment;
+   contour : IPCB_Contour;
+
+begin
+   PCBServer.PreProcess;
+
+   contour :=  IPCB_Contour;
+   contour.AddPoint(23, 20);
+   contour.AddPoint(23, 27);
+   contour.AddPoint(30, 27);
+   contour.AddPoint(30, 20);
+
+   region := PCBServer.PCBObjectFactory(eRegionObject, eNoDimension, eCreate_Default);
+   region.SetOutlineContour(contour);
+   region.Layer := eTopLayer;
+
+   Board.AddPCBObject(region);
+
+   //PanelPCB.AddPCBObject(PolyCut1);
+
+   //PolyCut1.Rebuild;
+
+   PCBServer.PostProcess;
+
+   {ResetParameters();
+   AddStringParameter('Action', 'Redraw');
+   RunProcess('PCB:Zoom');
+   }
+   ShowInfo(PolyCut1.GetState_AreaSize);
+end;
+
+procedure PlaceBoardTitle(PanelPCB : IPCB_Board);
+var
+   Title : IPCB_Text;
+   Location : TLocation;
+   xTextPost, yTextPost : Real;
+
+begin
+    PCBServer.PreProcess;
+    yTextPost := HeightPanel - yPanelOrigin + CoutoutWidth;
+    xTextPost := WidthPanel/2 - 1;
+    Location := Point(MmToMils(xTextPost), MmToMils(yTextPost));
+
+    Title := PCBServer.PCBObjectFactory(eTextObject, eNoDimension, eCreate_Default);
+
+    Title.XLocation  := Location.X;
+    Title.YLocation  := Location.Y;
+    Title.Layer      := eTopOverlay;
+//    Result.IsHidden := false;
+    Title.UseTTFonts := false;
+    Title.UnderlyingString  := AnsiReplaceText(SplitAndGetLast(FileName, '\'), '.PcbDoc', '');
+    Title.Size       := MmToMils((HeightPanel - yTextPost) * 0.85);
+    Title.Width      := MmToMils(cTextWidth);
+    //Title.UnionIndex := UIndex;
+
+    PanelPCB.AddPCBObject(Title);
+    //PCBServer.SendMessageToRobots(Board.I_ObjectAddress, c_Broadcast, PCBM_BoardRegisteration, Result.I_ObjectAddress);
+
+    PCBServer.PostProcess;
 end;
