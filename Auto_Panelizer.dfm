@@ -2,258 +2,186 @@ object Form1: TForm1
   Left = 0
   Top = 0
   Caption = 'Form1'
-  ClientHeight = 636
-  ClientWidth = 528
+  ClientHeight = 424
+  ClientWidth = 352
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
-  Font.Height = -17
+  Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
   OnCreate = Form1Create
-  PixelsPerInch = 144
-  TextHeight = 21
+  PixelsPerInch = 96
+  TextHeight = 13
   object Label1: TLabel
-    Left = 33
-    Top = 32
-    Width = 115
-    Height = 21
-    Margins.Left = 5
-    Margins.Top = 5
-    Margins.Right = 5
-    Margins.Bottom = 5
+    Left = 22
+    Top = 21
+    Width = 76
+    Height = 13
     Caption = 'Search for PCB:'
   end
   object GroupBox2: TGroupBox
-    Left = 30
-    Top = 240
-    Width = 474
-    Height = 216
-    Margins.Left = 5
-    Margins.Top = 5
-    Margins.Right = 5
-    Margins.Bottom = 5
+    Left = 20
+    Top = 160
+    Width = 316
+    Height = 144
     Caption = 'Panel Dimensions'
     TabOrder = 6
     object Label2: TLabel
-      Left = 15
-      Top = 45
-      Width = 172
-      Height = 21
-      Margins.Left = 5
-      Margins.Top = 5
-      Margins.Right = 5
-      Margins.Bottom = 5
+      Left = 10
+      Top = 30
+      Width = 110
+      Height = 13
       Caption = 'Number of Boards in X:'
     end
     object Label3: TLabel
-      Left = 15
-      Top = 98
-      Width = 172
-      Height = 21
-      Margins.Left = 5
-      Margins.Top = 5
-      Margins.Right = 5
-      Margins.Bottom = 5
+      Left = 10
+      Top = 65
+      Width = 110
+      Height = 13
       Caption = 'Number of Boards in Y:'
     end
     object Label8: TLabel
-      Left = 15
-      Top = 150
-      Width = 180
-      Height = 21
-      Margins.Left = 5
-      Margins.Top = 5
-      Margins.Right = 5
-      Margins.Bottom = 5
+      Left = 10
+      Top = 100
+      Width = 113
+      Height = 13
       Caption = 'Total Panel Dimensions:'
     end
     object Label9: TLabel
-      Left = 405
-      Top = 144
-      Width = 50
-      Height = 31
-      Margins.Left = 5
-      Margins.Top = 5
-      Margins.Right = 5
-      Margins.Bottom = 5
+      Left = 270
+      Top = 96
+      Width = 32
+      Height = 21
       Caption = 'mm'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
-      Font.Height = -26
+      Font.Height = -17
       Font.Name = 'Tahoma'
       Font.Style = [fsBold]
       ParentFont = False
     end
     object YEntry: TEdit
-      Left = 210
-      Top = 93
-      Width = 182
-      Height = 29
-      Margins.Left = 5
-      Margins.Top = 5
-      Margins.Right = 5
-      Margins.Bottom = 5
+      Left = 140
+      Top = 62
+      Width = 121
+      Height = 21
       TabOrder = 1
       Text = '1'
       OnChange = YEntryChange
     end
     object XEntry: TEdit
-      Left = 210
-      Top = 41
-      Width = 182
-      Height = 29
-      Margins.Left = 5
-      Margins.Top = 5
-      Margins.Right = 5
-      Margins.Bottom = 5
+      Left = 140
+      Top = 27
+      Width = 121
+      Height = 21
       TabOrder = 2
       Text = '1'
       OnChange = XEntryChange
     end
     object PanelDimEntry: TEdit
-      Left = 210
-      Top = 146
-      Width = 182
-      Height = 29
-      Margins.Left = 5
-      Margins.Top = 5
-      Margins.Right = 5
-      Margins.Bottom = 5
+      Left = 140
+      Top = 97
+      Width = 121
+      Height = 21
       TabOrder = 0
     end
   end
   object PCBEntry: TEdit
-    Left = 26
-    Top = 63
-    Width = 358
-    Height = 29
-    Margins.Left = 5
-    Margins.Top = 5
-    Margins.Right = 5
-    Margins.Bottom = 5
+    Left = 17
+    Top = 42
+    Width = 239
+    Height = 21
     TabOrder = 0
   end
   object OKButton: TButton
-    Left = 269
-    Top = 560
-    Width = 112
-    Height = 36
-    Margins.Left = 5
-    Margins.Top = 5
-    Margins.Right = 5
-    Margins.Bottom = 5
+    Left = 179
+    Top = 373
+    Width = 75
+    Height = 24
     Caption = 'OK'
     TabOrder = 1
     OnClick = OKButtonClick
   end
   object SearchButton: TButton
-    Left = 396
-    Top = 62
-    Width = 113
-    Height = 37
-    Margins.Left = 5
-    Margins.Top = 5
-    Margins.Right = 5
-    Margins.Bottom = 5
+    Left = 264
+    Top = 41
+    Width = 75
+    Height = 25
     Caption = 'Search'
     TabOrder = 2
     OnClick = SearchButtonClick
   end
   object GroupBox1: TGroupBox
-    Left = 30
-    Top = 110
-    Width = 474
-    Height = 106
-    Margins.Left = 5
-    Margins.Top = 5
-    Margins.Right = 5
-    Margins.Bottom = 5
+    Left = 20
+    Top = 73
+    Width = 316
+    Height = 71
     Caption = 'PCB Dimensions'
     TabOrder = 3
     object Label4: TLabel
-      Left = 33
-      Top = 44
-      Width = 27
-      Height = 31
-      Margins.Left = 5
-      Margins.Top = 5
-      Margins.Right = 5
-      Margins.Bottom = 5
+      Left = 22
+      Top = 29
+      Width = 18
+      Height = 21
       Caption = 'X:'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
-      Font.Height = -26
+      Font.Height = -17
       Font.Name = 'Tahoma'
       Font.Style = [fsBold]
       ParentFont = False
     end
     object Label5: TLabel
-      Left = 261
-      Top = 44
-      Width = 26
-      Height = 31
-      Margins.Left = 5
-      Margins.Top = 5
-      Margins.Right = 5
-      Margins.Bottom = 5
+      Left = 174
+      Top = 29
+      Width = 17
+      Height = 21
       Caption = 'Y:'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
-      Font.Height = -26
+      Font.Height = -17
       Font.Name = 'Tahoma'
       Font.Style = [fsBold]
       ParentFont = False
     end
     object Label6: TLabel
-      Left = 165
-      Top = 44
-      Width = 50
-      Height = 31
-      Margins.Left = 5
-      Margins.Top = 5
-      Margins.Right = 5
-      Margins.Bottom = 5
+      Left = 110
+      Top = 29
+      Width = 32
+      Height = 21
       Caption = 'mm'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
-      Font.Height = -26
+      Font.Height = -17
       Font.Name = 'Tahoma'
       Font.Style = [fsBold]
       ParentFont = False
     end
     object Label7: TLabel
-      Left = 393
-      Top = 44
-      Width = 50
-      Height = 31
-      Margins.Left = 5
-      Margins.Top = 5
-      Margins.Right = 5
-      Margins.Bottom = 5
+      Left = 262
+      Top = 29
+      Width = 32
+      Height = 21
       Caption = 'mm'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
-      Font.Height = -26
+      Font.Height = -17
       Font.Name = 'Tahoma'
       Font.Style = [fsBold]
       ParentFont = False
     end
   end
   object xPCBDimEntry: TEdit
-    Left = 98
-    Top = 153
-    Width = 91
-    Height = 32
-    Margins.Left = 5
-    Margins.Top = 5
-    Margins.Right = 5
-    Margins.Bottom = 5
+    Left = 65
+    Top = 102
+    Width = 61
+    Height = 24
     Enabled = False
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
-    Font.Height = -20
+    Font.Height = -13
     Font.Name = 'Tahoma'
     Font.Style = []
     ParentFont = False
@@ -261,28 +189,28 @@ object Form1: TForm1
     TabOrder = 4
   end
   object yPCBDimEntry: TEdit
-    Left = 323
-    Top = 153
-    Width = 91
-    Height = 32
-    Margins.Left = 5
-    Margins.Top = 5
-    Margins.Right = 5
-    Margins.Bottom = 5
+    Left = 215
+    Top = 102
+    Width = 61
+    Height = 24
     Enabled = False
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
-    Font.Height = -20
+    Font.Height = -13
     Font.Name = 'Tahoma'
     Font.Style = []
     ParentFont = False
     TabOrder = 5
   end
   object CancelButton: TButton
-    Left = 398
-    Top = 560
-    Width = 112
-    Height = 36
+    Left = 265
+    Top = 373
+    Width = 75
+    Height = 24
+    Margins.Left = 2
+    Margins.Top = 2
+    Margins.Right = 2
+    Margins.Bottom = 2
     Caption = 'Cancel'
     TabOrder = 7
     OnClick = CancelButtonClick

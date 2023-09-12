@@ -20,18 +20,19 @@ const
      cTextHeight   = 5;
      cTextWidth    = 0.5;
      cLineWidth    = 1;
-     CoutoutWidth = 2;
+     eTextOffset = 4;
 
 var
+    Workspace: IWorkspace;
     PCBBoard: IPCB_Board;
-    FileName: WideString;
+    CurrentProjectDir, FileName: WideString;
     OpenDlg: TOpenDialog;
 
     BoardBounds: TCoordRect;
     // PCB Width and Height
     WidthMM, HeightMM: Real;
     // Panel Measurements.
-    xPanelOrigin, yPanelOrigin, WidthPanel, HeightPanel, ColSpace, RowSpace : Real;
+    xPanelOrigin, yPanelOrigin, WidthPanel, HeightPanel, ColSpace, RowSpace, HeightEmbeddedObject, WidthEmbeddedObject : Real;
     XCount, YCount: Integer;
 
 function SplitAndGetLast(const InputString: string; const Delimiter: Char): string;
@@ -135,6 +136,12 @@ end;
 
 {..............................................................................}
 
+
+procedure SetCurrentLayer(Board : IPCB_Board, Layer : TLayer);
+begin
+     Board.CurrentLayer := Layer;
+end;
+
 procedure AddEmbeddedBoard(PanelPCB: IPCB_Board);
 var
     EmbeddedBoardList : TObjectList;
@@ -142,7 +149,9 @@ var
 begin
     EmbeddedBoardList := GetEmbeddedBoards(PCBBoard);
 
-    if EmbeddedBoardList.Count < 1 then
+    AddEmbeddedBoardObj(PanelPCB);
+
+    {if EmbeddedBoardList.Count < 1 then
     begin
         AddEmbeddedBoardObj(PanelPCB);
     end
@@ -150,7 +159,7 @@ begin
     else
     begin
         ShowWarning('document already has embedded boards !  ' + IntToStr(EmbeddedBoardList.Count) );
-    end;
+    end;}
 end;
 
 procedure ResizePCBBoard(PanelPCB: IPCB_Board);
@@ -161,6 +170,9 @@ Var
     ALayer : TLayer;
 
 Begin
+     // Used to change xorigin of pcb
+    //PanelPCB.XOrigin := MmToMils(10);
+    //PanelPCB.YOrigin := MmToMils(10);
     PCBServer.PreProcess;
 
     ALayer := LayerUtils.MechanicalLayer(eBoardLayer);
@@ -214,6 +226,7 @@ Begin
     RunProcess('PCB:PlaceBoardOutline');
 
     BasicViewLayers;
+    SetCurrentLayer(PanelPCB, ALayer);
 
     PCBServer.PostProcess;
 End;
@@ -222,12 +235,16 @@ procedure TForm1.SearchButtonClick(Sender: TObject);
 begin
     // Create an Open Dialog
     OpenDlg := TOpenDialog.Create(nil);
+    Workspace := GetWorkSpace;
+    CurrentProjectDir := AnsiReplaceText(Workspace.DM_FocusedProject.DM_ProjectFullPath, Workspace.DM_FocusedProject.DM_ProjectFileName , '');
+    OpenDlg.InitialDir := CurrentProjectDir;
     OpenDlg.Title := 'Open PCB Document';
     OpenDlg.Filter := 'PCB Files (*.PcbDoc)|*.PcbDoc';
 
     if OpenDlg.Execute then
     begin
         FileName := OpenDlg.FileName;
+
         // Check if the file exists
         if not FileExists(FileName) then
         begin
@@ -291,8 +308,11 @@ begin
       RowSpace := 2;
       ColSpace := 2;
 
-      WidthPanel  := (xPanelOrigin *2) + ColSpace*(XCount-1) + WidthMM * XCount;
-      HeightPanel := (yPanelOrigin *2) + RowSpace*(YCount-1) + HeightMM * YCount;
+      WidthEmbeddedObject :=  ColSpace*(XCount-1) + WidthMM * XCount;
+      HeightEmbeddedObject := RowSpace*(YCount-1) + HeightMM * YCount;
+
+      WidthPanel  := (xPanelOrigin *2) + WidthEmbeddedObject;
+      HeightPanel := (yPanelOrigin *2) + HeightEmbeddedObject;
 
       PanelDimEntry.Text := FloatToStr(WidthPanel) + 'x' + FloatToStr(HeightPanel);
    end
@@ -632,8 +652,8 @@ var
 
 begin
     PCBServer.PreProcess;
-    yTextPost := HeightPanel - yPanelOrigin + CoutoutWidth;
-    xTextPost := (WidthPanel - xPanelOrigin*2)/2;
+    yTextPost := yPanelOrigin + HeightEmbeddedObject + eTextOffset;
+    xTextPost := WidthEmbeddedObject/2;
     Location := Point(MmToMils(xTextPost), MmToMils(yTextPost));
 
     Title := PCBServer.PCBObjectFactory(eTextObject, eNoDimension, eCreate_Default);
@@ -642,14 +662,12 @@ begin
     Title.YLocation  := Location.Y;
     Title.Layer      := eTopOverlay;
 //    Result.IsHidden := false;
-    Title.UseTTFonts := false;
-    Title.UnderlyingString  := AnsiReplaceText(SplitAndGetLast(FileName, '\'), '.PcbDoc', '');
-    Title.Size       := MmToMils((HeightPanel - yTextPost) * 0.85);
-    Title.Width      := MmToMils(cTextWidth);
-    //Title.UnionIndex := UIndex;
+    Title.UseTTFonts := true;
+    Title.Text  := AnsiReplaceText(SplitAndGetLast(FileName, '\'), '.PcbDoc', '');
+    Title.Size       := MmToMils((HeightPanel - yTextPost) * 0.75);
+    //Title.Width      := MmToMils(cTextWidth);
 
     PanelPCB.AddPCBObject(Title);
-    //PCBServer.SendMessageToRobots(Board.I_ObjectAddress, c_Broadcast, PCBM_BoardRegisteration, Result.I_ObjectAddress);
-
     PCBServer.PostProcess;
+
 end;
