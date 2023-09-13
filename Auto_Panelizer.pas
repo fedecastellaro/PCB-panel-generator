@@ -168,6 +168,9 @@ Var
     Iterator: IPCB_BoardIterator;
     CurrentObject: IPCB_Track;
     ALayer : TLayer;
+    LU : IPCB_LayerUtils;
+    LayerObject : IPCB_MechanicalLayer;
+
 
 Begin
      // Used to change xorigin of pcb
@@ -176,13 +179,17 @@ Begin
     PCBServer.PreProcess;
 
     ALayer := LayerUtils.MechanicalLayer(eBoardLayer);
+    //ShowInfo(String2Layer('Mechanical Layer 21'));
+
+    ShowInfo(LayerObject.Name);
+    ShowInfo(Layer2String(ALayer));
 
     Track1 := PCBServer.PCBObjectFactory(eTrackObject, eNoDimension, eCreate_Default);
     Track1.x1 := 0;
     Track1.y1 := 0;
     Track1.x2 := MmToMils(WidthPanel);
     Track1.y2 := 0;
-    Track1.Layer := ALayer;
+    Track1.Layer := LayerObject.V6_LayerID;
     Track1.Width := MilsToCoord(eBoardTrackWidth);
     PanelPCB.AddPCBObject(Track1);
     Track1.Selected := true;
@@ -192,7 +199,7 @@ Begin
     Track2.y1 := 0;
     Track2.x2 := MmToMils(WidthPanel);
     Track2.y2 := MmToMils(HeightPanel);
-    Track2.Layer := ALayer;
+    Track2.Layer := LayerObject.V6_LayerID;
     Track2.Width := MilsToCoord(eBoardTrackWidth);
     PanelPCB.AddPCBObject(Track2);
     Track2.Selected := true;
@@ -202,7 +209,7 @@ Begin
     Track3.y1 := MmToMils(HeightPanel);
     Track3.x2 := 0;
     Track3.y2 := MmToMils(HeightPanel);
-    Track3.Layer := ALayer;
+    Track3.Layer := LayerObject.V6_LayerID;
     Track3.Width := MilsToCoord(eBoardTrackWidth);
     PanelPCB.AddPCBObject(Track3);
     Track3.Selected := true;
@@ -212,13 +219,13 @@ Begin
     Track4.y1 := MmToMils(HeightPanel);
     Track4.x2 := 0;
     Track4.y2 := 0;
-    Track4.Layer := ALayer;
+    Track4.Layer := LayerObject.V6_LayerID;
     Track4.Width := MilsToCoord(eBoardTrackWidth);
     PanelPCB.AddPCBObject(Track4);
     Track4.Selected := true;
 
     // Display (unconditionally) the layer selected by the user.
-    PanelPCB.LayerIsDisplayed[ALayer] := True;
+    PanelPCB.LayerIsDisplayed[LayerObject.V6_LayerID] := True;
 
     // Refresh PCB workspace.
     ResetParameters();
@@ -253,6 +260,7 @@ begin
         end;
 
         PCBBoard := PCBServer.GetPCBBoardByPath(FileName);
+        //C:\Users\fcastellaro\Desktop\Altium Scripting\PCB_DUMMY\PCB_Project_script_tests\pcb_test.PcbDoc
 
         if PCBServer = nil then
         begin
@@ -367,19 +375,32 @@ end;
 
 procedure TForm1.Form1Create(Sender: TObject);
 begin
-     {PCBBoard := PCBServer.GetCurrentPCBBoard;
-     if PCBBoard = Nil then Exit;
+  // THIS IS ONLY FOR DEBBUGING
+FileName := 'C:\Users\fcastellaro\Desktop\Altium Scripting\PCB_DUMMY\PCB_Project_script_tests\pcb_test.PcbDoc';
+PCBBoard := PCBServer.GetPCBBoardByPath(FileName);
 
-     FileName := PCBBoard.FileName;
-     PCBEntry.Text := SplitAndGetLast(FileName, '\');
-     BoardBounds := PCBBoard.BoardOutline.BoundingRectangle;
 
-     GetPCBWidthAndHeight( BoardBounds );
+if PCBServer = nil then
+begin
+     ShowError('PCBServer Failed.');
+     Exit;
+end;
+// Checks that PCBBOard exists
+if PCBBoard = nil then
+begin
+     ShowError('Failed to open PCB document: ' + FileName);
+     Exit;
+end;
 
-     xPCBDimEntry.Text :=  FloatToStr(WidthMM);
-     yPCBDimEntry.Text :=  FloatToStr(HeightMM);
+PCBEntry.Text := SplitAndGetLast(FileName, '\');
+BoardBounds := PCBBoard.BoardOutline.BoundingRectangle;
 
-     calculatePanelDimensions;}
+GetPCBWidthAndHeight( BoardBounds );
+
+xPCBDimEntry.Text :=  FloatToStr(WidthMM);
+yPCBDimEntry.Text :=  FloatToStr(HeightMM);
+
+calculatePanelDimensions;
 end;
 
 Procedure BasicViewLayers;
@@ -664,7 +685,7 @@ begin
 //    Result.IsHidden := false;
     Title.UseTTFonts := true;
     Title.Text  := AnsiReplaceText(SplitAndGetLast(FileName, '\'), '.PcbDoc', '');
-    Title.Size       := MmToMils((HeightPanel - yTextPost) * 0.75);
+    Title.Size       := MmToMils(HeightPanel - yTextPost);
     //Title.Width      := MmToMils(cTextWidth);
 
     PanelPCB.AddPCBObject(Title);
