@@ -4,7 +4,9 @@ procedure calculatePanelDimensions;  forward;
 procedure CreatePCBDocument;   forward;
 procedure BasicViewLayers;   forward;
 procedure BoardLayerOnly;   forward;
-procedure PlacePolygonCutouts(PanelPCB : IPCB_Board);   forward; PlaceBoardTitle
+procedure InitializeImages; forward;
+procedure PlacePolygonCutouts(PanelPCB : IPCB_Board);   forward;
+procedure CopyBoardOutline(PCB_Board: IPCB_Board, AWidth : Coord; ALayer : TLayer); forward;
 procedure PlaceBoardTitle(PanelPCB : IPCB_Board);   forward;
 procedure PlacePanelFiducials(PanelPCB : IPCB_Board);   forward;
 procedure PlacePanelPads (PanelPCB : IPCB_Board);   forward;
@@ -34,6 +36,10 @@ var
     // Panel Measurements.
     xPanelOrigin, yPanelOrigin, WidthPanel, HeightPanel, ColSpace, RowSpace, HeightEmbeddedObject, WidthEmbeddedObject : Real;
     XCount, YCount: Integer;
+
+    // Test Image
+    ImageList: TStringList;
+    CurrentImageIndex: Integer;
 
 function SplitAndGetLast(const InputString: string; const Delimiter: Char): string;
     var
@@ -181,15 +187,15 @@ Begin
     ALayer := LayerUtils.MechanicalLayer(eBoardLayer);
     //ShowInfo(String2Layer('Mechanical Layer 21'));
 
-    ShowInfo(LayerObject.Name);
-    ShowInfo(Layer2String(ALayer));
+    //ShowInfo(LayerObject.Name);
+    //ShowInfo(Layer2String(ALayer));
 
     Track1 := PCBServer.PCBObjectFactory(eTrackObject, eNoDimension, eCreate_Default);
     Track1.x1 := 0;
     Track1.y1 := 0;
     Track1.x2 := MmToMils(WidthPanel);
     Track1.y2 := 0;
-    Track1.Layer := LayerObject.V6_LayerID;
+    Track1.Layer := ALayer;
     Track1.Width := MilsToCoord(eBoardTrackWidth);
     PanelPCB.AddPCBObject(Track1);
     Track1.Selected := true;
@@ -199,7 +205,7 @@ Begin
     Track2.y1 := 0;
     Track2.x2 := MmToMils(WidthPanel);
     Track2.y2 := MmToMils(HeightPanel);
-    Track2.Layer := LayerObject.V6_LayerID;
+    Track2.Layer := ALayer;
     Track2.Width := MilsToCoord(eBoardTrackWidth);
     PanelPCB.AddPCBObject(Track2);
     Track2.Selected := true;
@@ -209,7 +215,7 @@ Begin
     Track3.y1 := MmToMils(HeightPanel);
     Track3.x2 := 0;
     Track3.y2 := MmToMils(HeightPanel);
-    Track3.Layer := LayerObject.V6_LayerID;
+    Track3.Layer := ALayer;
     Track3.Width := MilsToCoord(eBoardTrackWidth);
     PanelPCB.AddPCBObject(Track3);
     Track3.Selected := true;
@@ -219,13 +225,13 @@ Begin
     Track4.y1 := MmToMils(HeightPanel);
     Track4.x2 := 0;
     Track4.y2 := 0;
-    Track4.Layer := LayerObject.V6_LayerID;
+    Track4.Layer := ALayer;
     Track4.Width := MilsToCoord(eBoardTrackWidth);
     PanelPCB.AddPCBObject(Track4);
     Track4.Selected := true;
 
     // Display (unconditionally) the layer selected by the user.
-    PanelPCB.LayerIsDisplayed[LayerObject.V6_LayerID] := True;
+    PanelPCB.LayerIsDisplayed[ALayer] := True;
 
     // Refresh PCB workspace.
     ResetParameters();
@@ -291,6 +297,8 @@ var
     PanelPCB_Board : IPCB_Board;
 begin
          PanelPCB_Board := PCBServer.GetCurrentPCBBoard;
+
+         CopyBoardOutline(PCBBoard, MmToMils(0.254), LayerUtils.MechanicalLayer(eBoardLayer));
          ResizePCBBoard(PanelPCB_Board);
          AddEmbeddedBoard(PanelPCB_Board);
          PlacePanelPads(PanelPCB_Board);
@@ -323,6 +331,9 @@ begin
       HeightPanel := (yPanelOrigin *2) + HeightEmbeddedObject;
 
       PanelDimEntry.Text := FloatToStr(WidthPanel) + 'x' + FloatToStr(HeightPanel);
+      PanelHeightEntry.Text := (HeightPanel);
+      PanelWidthEntry.Text := (WidthPanel);
+
    end
 
    else
@@ -375,8 +386,9 @@ end;
 
 procedure TForm1.Form1Create(Sender: TObject);
 begin
-  // THIS IS ONLY FOR DEBBUGING
-FileName := 'C:\Users\fcastellaro\Desktop\Altium Scripting\PCB_DUMMY\PCB_Project_script_tests\pcb_test.PcbDoc';
+     InitializeImages;
+// THIS IS ONLY FOR DEBBUGING
+{FileName := 'C:\Users\fcastellaro\Desktop\Altium Scripting\PCB_DUMMY\PCB_Project_script_tests\pcb_test.PcbDoc';
 PCBBoard := PCBServer.GetPCBBoardByPath(FileName);
 
 
@@ -401,6 +413,7 @@ xPCBDimEntry.Text :=  FloatToStr(WidthMM);
 yPCBDimEntry.Text :=  FloatToStr(HeightMM);
 
 calculatePanelDimensions;
+}
 end;
 
 Procedure BasicViewLayers;
@@ -692,3 +705,119 @@ begin
     PCBServer.PostProcess;
 
 end;
+
+procedure InitializeImages;
+begin
+  // Create a string list to hold image file paths
+  ImageList := TStringList.Create;
+  ImageList.Add('C:\Users\fcastellaro\Desktop\Altium Scripting\Panelizer2\auto_panelizer_altium\PanelSimple.png'); // Add the file path of your first image
+  ImageList.Add('C:\Users\fcastellaro\Desktop\Altium Scripting\Panelizer2\auto_panelizer_altium\Frame(10).png');  // Add the file path of your second image
+
+  // Initialize the current image index
+  CurrentImageIndex := 0;
+
+  // Load the first image into the TImage component
+  if ImageList.Count > 0 then
+    Image1.Picture.LoadFromFile(ImageList[CurrentImageIndex]);
+end;
+
+procedure SwitchToNextImage;
+begin
+  // Check if there are images in the list
+  if ImageList.Count > 0 then
+  begin
+    // Increment the current image index
+    Inc(CurrentImageIndex);
+
+    // Wrap around to the first image if we reach the end
+    if CurrentImageIndex >= ImageList.Count then
+      CurrentImageIndex := 0;
+
+    // Load and display the next image
+    Image1.Picture.LoadFromFile(ImageList[CurrentImageIndex]);
+  end;
+end;
+
+procedure TForm1.Image1Click(Sender: TObject);
+begin
+  // Check if there are images in the list
+  if ImageList.Count > 0 then
+  begin
+    // Increment the current image index
+    Inc(CurrentImageIndex);
+
+    // Wrap around to the first image if we reach the end
+    if CurrentImageIndex >= ImageList.Count then
+      CurrentImageIndex := 0;
+
+    // Load and display the next image
+    Image1.Picture.LoadFromFile(ImageList[CurrentImageIndex]);
+  end;
+end;
+
+// Taken and modified from CopyBoardOutlineForm script: https://www.altium.com/documentation/altium-designer/script-example-analysis
+// It doesn't seem to work properly when the board outline is complex.
+procedure CopyBoardOutline(PCB_Board: IPCB_Board, AWidth : Coord; ALayer : TLayer);
+Var
+    Track     : IPCB_Track;
+    Arc       : IPCB_Arc;
+    I,J       : Integer;
+Begin
+    PCB_Board.BoardOutline.Invalidate;
+    PCB_Board.BoardOutline.Rebuild;
+    PCB_Board.BoardOutline.Validate;
+
+    PCBServer.PreProcess;
+    // Step through each of the vertices of the Board Outline in turn.
+    For I := 0 To PCB_Board.BoardOutline.PointCount - 1 Do
+    Begin
+        // Set the value of J to point to the "next" vertex; this is normally
+        // I + 1, but needs to be set to 0 instead for the very last vertex
+        // that is processed by this loop.
+        If I = PCB_Board.BoardOutline.PointCount - 1 Then
+            J := 0
+        Else
+            J := I + 1;
+
+        If PCB_Board.BoardOutline.Segments[I].Kind = ePolySegmentLine Then
+        Begin
+            // Current segment is a straight line; create a Track object.
+            Track          := PCBServer.PCBObjectFactory(eTrackObject,
+                                                         eNoDimension,
+                                                         eCreate_Default);
+
+            Track.X1       := PCB_Board.BoardOutline.Segments[I].vx;
+            Track.Y1       := PCB_Board.BoardOutline.Segments[I].vy;
+            Track.X2       := PCB_Board.BoardOutline.Segments[J].vx;
+            Track.Y2       := PCB_Board.BoardOutline.Segments[J].vy;
+            Track.Layer    := ALayer;
+            Track.Width    := AWidth;
+            PCB_Board.AddPCBObject(Track);
+        End
+        Else
+        Begin
+            // Current segment is an arc; create an Arc object.
+            Arc := PCBServer.PCBObjectFactory(eArcObject,
+                                              eNoDimension,
+                                              eCreate_Default);
+
+            Arc.XCenter    := PCB_Board.BoardOutline.Segments[I].cx;
+            Arc.YCenter    := PCB_Board.BoardOutline.Segments[I].cy;
+            Arc.Layer      := ALayer;
+            Arc.LineWidth  := AWidth;
+            Arc.Radius     := PCB_Board.BoardOutline.Segments[I].Radius;
+            Arc.StartAngle := PCB_Board.BoardOutline.Segments[I].Angle1;
+            Arc.EndAngle   := PCB_Board.BoardOutline.Segments[I].Angle2;
+            PCB_Board.AddPCBObject(Arc);
+        End;
+    End;
+    PCBServer.PostProcess;
+
+    // Display (unconditionally) the layer selected by the user.
+    PCB_Board.LayerIsDisplayed[ALayer] := True;
+
+    // Refresh PCB workspace.
+    ResetParameters;
+    AddStringParameter('Action', 'Redraw');
+    RunProcess('PCB:Zoom');
+End;
