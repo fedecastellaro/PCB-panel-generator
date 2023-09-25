@@ -6,6 +6,7 @@ procedure BasicViewLayers;   forward;
 procedure BoardLayerOnly;   forward;
 procedure InitializeImages; forward;
 procedure PlacePolygonCutouts(PanelPCB : IPCB_Board);   forward;
+procedure DeleteAllObjectsOnPCB(PanelPCB : IPCB_Board);   forward;
 procedure CopyBoardOutline(PCB_Board: IPCB_Board, AWidth : Coord; ALayer : TLayer); forward;
 procedure PlaceBoardTitle(PanelPCB : IPCB_Board);   forward;
 procedure PlacePanelFiducials(PanelPCB : IPCB_Board);   forward;
@@ -23,6 +24,7 @@ const
      cTextWidth    = 0.5;
      cLineWidth    = 1;
      eTextOffset = 4;
+     imageWidth = 664;
 
 var
     Workspace: IWorkspace;
@@ -36,6 +38,8 @@ var
     // Panel Measurements.
     xPanelOrigin, yPanelOrigin, WidthPanel, HeightPanel, ColSpace, RowSpace, HeightEmbeddedObject, WidthEmbeddedObject : Real;
     XCount, YCount: Integer;
+
+    PCBTitle : string;
 
     // Test Image
     ImageList: TStringList;
@@ -288,7 +292,13 @@ begin
         xPCBDimEntry.Text :=  FloatToStr(WidthMM);
         yPCBDimEntry.Text :=  FloatToStr(HeightMM);
 
+        // Save the name of the PCB Selected and place the title
+        PCBTitle := AnsiReplaceText(SplitAndGetLast(FileName, '\'), '.PcbDoc', '');
+        titleLabel.Caption := PCBTitle;
+        titleLabel.Left := (imageWidth/2) - (titleLabel.Canvas.TextWidth(titleLabel.Caption)/2);
+
         calculatePanelDimensions;
+        OKButton.Enabled := True;
     end;
 end;
 
@@ -297,14 +307,17 @@ var
     PanelPCB_Board : IPCB_Board;
 begin
          PanelPCB_Board := PCBServer.GetCurrentPCBBoard;
-
-         CopyBoardOutline(PCBBoard, MmToMils(0.254), LayerUtils.MechanicalLayer(eBoardLayer));
+         
+         DeleteAllObjectsOnPCB(PanelPCB_Board);
+         //CopyBoardOutline(PCBBoard, MmToMils(0.254), LayerUtils.MechanicalLayer(eBoardLayer));
+         
          ResizePCBBoard(PanelPCB_Board);
          AddEmbeddedBoard(PanelPCB_Board);
          PlacePanelPads(PanelPCB_Board);
          PlacePanelFiducials(PanelPCB_Board);
          //PlacePolygonCutouts(PanelPCB_Board);
-         PlaceBoardTitle(PanelPCB_Board);
+         if not TitleEnableButton.Checked then PlaceBoardTitle(PanelPCB_Board);
+         
          Close;
 end;
 
@@ -312,8 +325,8 @@ procedure calculatePanelDimensions;
 begin
 if (WidthMM <> 0.0) and (HeightMM <> 0.0) then
 begin
-   xPanelOrigin := 11;
-   yPanelOrigin := 11;
+   xPanelOrigin := StrToInt(xPanelOriginEntry.Text);
+   yPanelOrigin := StrToInt(yPanelOriginEntry.Text);
 
    if TryStrToInt(XEntry.Text, XCount) and TryStrToInt(YEntry.Text, YCount) then
    begin
@@ -321,8 +334,8 @@ begin
       YCount := StrToInt(YEntry.Text);
 
       // Arbitrary hardcoded: will modify with corresponding entry in gui
-      RowSpace := 2;
-      ColSpace := 2;
+      RowSpace := StrToInt(RowSpaceEntry.Text);
+      ColSpace := StrToInt(ColumnSpaceEntry.Text);
 
       WidthEmbeddedObject :=  ColSpace*(XCount-1) + WidthMM * XCount;
       HeightEmbeddedObject := RowSpace*(YCount-1) + HeightMM * YCount;
@@ -341,16 +354,6 @@ begin
        PanelDimEntry.Text := 'error';
    end;
 end;
-end;
-
-procedure TForm1.XEntryChange(Sender: TObject);
-begin
-     calculatePanelDimensions;
-end;
-
-procedure TForm1.YEntryChange(Sender: TObject);
-begin
-     calculatePanelDimensions;
 end;
 
 procedure TForm1.CancelButtonClick(Sender: TObject);
@@ -387,33 +390,7 @@ end;
 procedure TForm1.Form1Create(Sender: TObject);
 begin
      InitializeImages;
-// THIS IS ONLY FOR DEBBUGING
-{FileName := 'C:\Users\fcastellaro\Desktop\Altium Scripting\PCB_DUMMY\PCB_Project_script_tests\pcb_test.PcbDoc';
-PCBBoard := PCBServer.GetPCBBoardByPath(FileName);
 
-
-if PCBServer = nil then
-begin
-     ShowError('PCBServer Failed.');
-     Exit;
-end;
-// Checks that PCBBOard exists
-if PCBBoard = nil then
-begin
-     ShowError('Failed to open PCB document: ' + FileName);
-     Exit;
-end;
-
-PCBEntry.Text := SplitAndGetLast(FileName, '\');
-BoardBounds := PCBBoard.BoardOutline.BoundingRectangle;
-
-GetPCBWidthAndHeight( BoardBounds );
-
-xPCBDimEntry.Text :=  FloatToStr(WidthMM);
-yPCBDimEntry.Text :=  FloatToStr(HeightMM);
-
-calculatePanelDimensions;
-}
 end;
 
 Procedure BasicViewLayers;
@@ -697,7 +674,7 @@ begin
     Title.Layer      := eTopOverlay;
 //    Result.IsHidden := false;
     Title.UseTTFonts := true;
-    Title.Text  := AnsiReplaceText(SplitAndGetLast(FileName, '\'), '.PcbDoc', '');
+    Title.Text       := PCBTitle;
     Title.Size       := MmToMils(HeightPanel - yTextPost);
     //Title.Width      := MmToMils(cTextWidth);
 
@@ -710,8 +687,9 @@ procedure InitializeImages;
 begin
   // Create a string list to hold image file paths
   ImageList := TStringList.Create;
-  ImageList.Add('C:\Users\fcastellaro\Desktop\Altium Scripting\Panelizer2\auto_panelizer_altium\PanelSimple.png'); // Add the file path of your first image
-  ImageList.Add('C:\Users\fcastellaro\Desktop\Altium Scripting\Panelizer2\auto_panelizer_altium\Frame(10).png');  // Add the file path of your second image
+  //ImageList.Add('C:\Users\fcastellaro\Desktop\Altium Scripting\Panelizer2\auto_panelizer_altium\PanelSimple.png'); // Add the file path of your first image
+  //ImageList.Add('C:\Users\fcastellaro\Desktop\Altium Scripting\Panelizer2\auto_panelizer_altium\Frame(10).png');  // Add the file path of your second image
+  ImageList.Add('C:\Users\fcastellaro\Desktop\Altium Scripting\Panelizer2\auto_panelizer_altium\Frame 3.png');
 
   // Initialize the current image index
   CurrentImageIndex := 0;
@@ -821,3 +799,64 @@ Begin
     AddStringParameter('Action', 'Redraw');
     RunProcess('PCB:Zoom');
 End;
+
+procedure TForm1.TitleEnableButtonClick(Sender: TObject);
+begin
+     if TitleEnableButton.Checked then
+        begin
+          titleLabel.Visible := false;
+        end
+     else
+         begin
+          titleLabel.Visible := true;
+         end;
+end;
+
+procedure DeleteAllObjectsOnPCB(PanelPCB : IPCB_Board);
+var
+  PCBBoard: IPCB_Board;
+  Iterator: IPCB_BoardIterator;
+  CurrentObject: IPCB_Object;
+  BLayerSet  : IPCB_LayerSet;
+
+begin
+  PCBServer.PreProcess;
+  BLayerSet := LayerSetUtils.CreateLayerSet.IncludeAllLayers;
+
+  // Create an iterator to traverse all objects on the PCB
+  Iterator := PanelPCB.BoardIterator_Create;
+  Iterator.AddFilter_IPCB_LayerSet(BLayerSet);
+  Iterator.AddFilter_Method(eProcessAll);
+  
+  try
+    // Iterate through all objects and delete them
+    CurrentObject := Iterator.FirstPCBObject;
+    while CurrentObject <> nil do
+    begin
+      PanelPCB.RemovePCBObject(CurrentObject);
+      CurrentObject := Iterator.NextPCBObject;
+    end;
+  finally
+    PanelPCB.BoardIterator_Destroy(Iterator);
+  end;
+
+  // Refresh the PCB editor to reflect the changes
+  PCBServer.PostProcess;
+end;
+
+procedure TForm1.CommonChangeCallback(Sender: TObject);
+var
+   IntValue: Integer;
+begin
+     if TryStrToInt(Sender.Text, IntValue) then
+        begin
+          calculatePanelDimensions;
+          Sender.Color := clWhite;
+          OKButton.Enabled := True;
+        end
+     else
+      begin
+        Sender.Color := clRed;
+        OKButton.Enabled := False;
+      end;
+end;
