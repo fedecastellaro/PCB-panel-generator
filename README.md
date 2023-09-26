@@ -2,7 +2,7 @@
 
 This repository contains a DelphiScript for Altium Designer that automates the generation of a panel based on an existing PCB design. This script simplifies the process of creating panels for PCB fabrication, making it more efficient and error-free.
 
-    ![1695735939416](image/README/1695735939416.png)
+    ![1695737720146](image/README/1695737720146.png)
 
 ## Introduction
 
