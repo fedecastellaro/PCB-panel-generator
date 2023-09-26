@@ -23,11 +23,13 @@ const
      cTextHeight   = 5;
      cTextWidth    = 0.5;
      cLineWidth    = 1;
-     eTextOffset = 4;
+     eTextOffset = 3;
      imageWidth = 664;
+     eOffsetHalfTitleLenght = 16;
 
 var
     Workspace: IWorkspace;
+    PanelPCB_Board : IPCB_Board;
     PCBBoard: IPCB_Board;
     CurrentProjectDir, FileName: WideString;
     OpenDlg: TOpenDialog;
@@ -39,7 +41,8 @@ var
     xPanelOrigin, yPanelOrigin, WidthPanel, HeightPanel, ColSpace, RowSpace, HeightEmbeddedObject, WidthEmbeddedObject : Real;
     XCount, YCount: Integer;
 
-    PCBTitle : string;
+    PCBTitle, PanelPCBDoc : string;
+    PanelPcbDocFilePath : WideString;
 
     // Test Image
     ImageList: TStringList;
@@ -145,7 +148,6 @@ begin
 end;
 
 {..............................................................................}
-
 
 procedure SetCurrentLayer(Board : IPCB_Board, Layer : TLayer);
 begin
@@ -269,8 +271,8 @@ begin
           Exit;
         end;
 
+        Workspace.DM_OpenProject(FileName, False);
         PCBBoard := PCBServer.GetPCBBoardByPath(FileName);
-        //C:\Users\fcastellaro\Desktop\Altium Scripting\PCB_DUMMY\PCB_Project_script_tests\pcb_test.PcbDoc
 
         if PCBServer = nil then
         begin
@@ -303,30 +305,27 @@ begin
 end;
 
 procedure TForm1.OKButtonClick(Sender: TObject);
-var
-    PanelPCB_Board : IPCB_Board;
 begin
-         PanelPCB_Board := PCBServer.GetCurrentPCBBoard;
-         
-         DeleteAllObjectsOnPCB(PanelPCB_Board);
-         //CopyBoardOutline(PCBBoard, MmToMils(0.254), LayerUtils.MechanicalLayer(eBoardLayer));
-         
-         ResizePCBBoard(PanelPCB_Board);
-         AddEmbeddedBoard(PanelPCB_Board);
-         PlacePanelPads(PanelPCB_Board);
-         PlacePanelFiducials(PanelPCB_Board);
-         //PlacePolygonCutouts(PanelPCB_Board);
-         if not TitleEnableButton.Checked then PlaceBoardTitle(PanelPCB_Board);
-         
-         Close;
+     //We open the PCB document where we are creating the panel.
+     Workspace.DM_OpenProject(PanelPcbDocFilePath, True);
+     DeleteAllObjectsOnPCB(PanelPCB_Board);
+     //CopyBoardOutline(PCBBoard, MmToMils(0.254), LayerUtils.MechanicalLayer(eBoardLayer));
+     ResizePCBBoard(PanelPCB_Board);
+     AddEmbeddedBoard(PanelPCB_Board);
+     PlacePanelPads(PanelPCB_Board);
+     PlacePanelFiducials(PanelPCB_Board);
+     //PlacePolygonCutouts(PanelPCB_Board);
+     if not TitleEnableButton.Checked then PlaceBoardTitle(PanelPCB_Board);
+
+      Close;
 end;
 
 procedure calculatePanelDimensions;
 begin
 if (WidthMM <> 0.0) and (HeightMM <> 0.0) then
 begin
-   xPanelOrigin := StrToInt(xPanelOriginEntry.Text);
-   yPanelOrigin := StrToInt(yPanelOriginEntry.Text);
+   xPanelOrigin := StrToFloat(xPanelOriginEntry.Text);
+   yPanelOrigin := StrToFloat(yPanelOriginEntry.Text);
 
    if TryStrToInt(XEntry.Text, XCount) and TryStrToInt(YEntry.Text, YCount) then
    begin
@@ -334,8 +333,8 @@ begin
       YCount := StrToInt(YEntry.Text);
 
       // Arbitrary hardcoded: will modify with corresponding entry in gui
-      RowSpace := StrToInt(RowSpaceEntry.Text);
-      ColSpace := StrToInt(ColumnSpaceEntry.Text);
+      RowSpace := StrToFloat(RowSpaceEntry.Text);
+      ColSpace := StrToFloat(ColumnSpaceEntry.Text);
 
       WidthEmbeddedObject :=  ColSpace*(XCount-1) + WidthMM * XCount;
       HeightEmbeddedObject := RowSpace*(YCount-1) + HeightMM * YCount;
@@ -389,7 +388,11 @@ end;
 
 procedure TForm1.Form1Create(Sender: TObject);
 begin
-     InitializeImages;
+     //InitializeImages;
+     PanelPCB_Board := PCBServer.GetCurrentPCBBoard;
+     PanelPcbDocFilePath := PanelPCB_Board.FileName;
+     PanelPCBDoc := SplitAndGetLast(PanelPcbDocFilePath, '\');
+     PanelPCBDocEntry.Text := PanelPCBDoc;
 
 end;
 
@@ -642,16 +645,8 @@ begin
 
    Board.AddPCBObject(region);
 
-   //PanelPCB.AddPCBObject(PolyCut1);
-
-   //PolyCut1.Rebuild;
-
    PCBServer.PostProcess;
 
-   {ResetParameters();
-   AddStringParameter('Action', 'Redraw');
-   RunProcess('PCB:Zoom');
-   }
    ShowInfo(PolyCut1.GetState_AreaSize);
 end;
 
@@ -664,7 +659,9 @@ var
 begin
     PCBServer.PreProcess;
     yTextPost := yPanelOrigin + HeightEmbeddedObject + eTextOffset;
-    xTextPost := WidthEmbeddedObject/2;
+    // TODO:
+    // Change this eOffsetHalfTitleLenght constant and make it 'dinamic' according to actual text.
+    xTextPost := (WidthPanel/2) - eOffsetHalfTitleLenght;
     Location := Point(MmToMils(xTextPost), MmToMils(yTextPost));
 
     Title := PCBServer.PCBObjectFactory(eTextObject, eNoDimension, eCreate_Default);
@@ -672,69 +669,17 @@ begin
     Title.XLocation  := Location.X;
     Title.YLocation  := Location.Y;
     Title.Layer      := eTopOverlay;
-//    Result.IsHidden := false;
     Title.UseTTFonts := true;
     Title.Text       := PCBTitle;
     Title.Size       := MmToMils(HeightPanel - yTextPost);
-    //Title.Width      := MmToMils(cTextWidth);
 
     PanelPCB.AddPCBObject(Title);
     PCBServer.PostProcess;
 
 end;
 
-procedure InitializeImages;
-begin
-  // Create a string list to hold image file paths
-  ImageList := TStringList.Create;
-  //ImageList.Add('C:\Users\fcastellaro\Desktop\Altium Scripting\Panelizer2\auto_panelizer_altium\PanelSimple.png'); // Add the file path of your first image
-  //ImageList.Add('C:\Users\fcastellaro\Desktop\Altium Scripting\Panelizer2\auto_panelizer_altium\Frame(10).png');  // Add the file path of your second image
-  ImageList.Add('C:\Users\fcastellaro\Desktop\Altium Scripting\Panelizer2\auto_panelizer_altium\Frame 3.png');
-
-  // Initialize the current image index
-  CurrentImageIndex := 0;
-
-  // Load the first image into the TImage component
-  if ImageList.Count > 0 then
-    Image1.Picture.LoadFromFile(ImageList[CurrentImageIndex]);
-end;
-
-procedure SwitchToNextImage;
-begin
-  // Check if there are images in the list
-  if ImageList.Count > 0 then
-  begin
-    // Increment the current image index
-    Inc(CurrentImageIndex);
-
-    // Wrap around to the first image if we reach the end
-    if CurrentImageIndex >= ImageList.Count then
-      CurrentImageIndex := 0;
-
-    // Load and display the next image
-    Image1.Picture.LoadFromFile(ImageList[CurrentImageIndex]);
-  end;
-end;
-
-procedure TForm1.Image1Click(Sender: TObject);
-begin
-  // Check if there are images in the list
-  if ImageList.Count > 0 then
-  begin
-    // Increment the current image index
-    Inc(CurrentImageIndex);
-
-    // Wrap around to the first image if we reach the end
-    if CurrentImageIndex >= ImageList.Count then
-      CurrentImageIndex := 0;
-
-    // Load and display the next image
-    Image1.Picture.LoadFromFile(ImageList[CurrentImageIndex]);
-  end;
-end;
-
 // Taken and modified from CopyBoardOutlineForm script: https://www.altium.com/documentation/altium-designer/script-example-analysis
-// It doesn't seem to work properly when the board outline is complex.
+// It doesn't seem to work properly when the board outline has a complex form.
 procedure CopyBoardOutline(PCB_Board: IPCB_Board, AWidth : Coord; ALayer : TLayer);
 Var
     Track     : IPCB_Track;
@@ -847,8 +792,9 @@ end;
 procedure TForm1.CommonChangeCallback(Sender: TObject);
 var
    IntValue: Integer;
+   FloatValue : Real;
 begin
-     if TryStrToInt(Sender.Text, IntValue) then
+     if TryStrToFloat(Sender.Text, FloatValue) then
         begin
           calculatePanelDimensions;
           Sender.Color := clWhite;
@@ -860,3 +806,6 @@ begin
         OKButton.Enabled := False;
       end;
 end;
+
+
+

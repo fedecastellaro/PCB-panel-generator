@@ -2,9 +2,11 @@ object Form1: TForm1
   AlignWithMargins = True
   Left = 0
   Top = 0
-  Caption = 'Form1'
-  ClientHeight = 708
-  ClientWidth = 733
+  BorderIcons = [biSystemMenu, biMinimize]
+  BorderStyle = bsSingle
+  Caption = 'Auto Panelizer '
+  ClientHeight = 706
+  ClientWidth = 729
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -2282,7 +2284,6 @@ object Form1: TForm1
       0000603B42260000006C47C804000080ED0899000000B01D2113000000B62364
       020000C076FF0F7C8B39820687E74A0000000049454E44AE426082}
     Stretch = True
-    OnClick = Image1Click
   end
   object Label7: TLabel
     Left = 363
@@ -2298,7 +2299,7 @@ object Form1: TForm1
     ParentFont = False
   end
   object Label11: TLabel
-    Left = 692
+    Left = 690
     Top = 411
     Width = 32
     Height = 21
@@ -2349,11 +2350,18 @@ object Form1: TForm1
     Font.Style = [fsBold]
     ParentFont = False
   end
+  object Label15: TLabel
+    Left = 4
+    Top = 691
+    Width = 126
+    Height = 13
+    Caption = 'Written by: fedecastellaro'
+  end
   object GroupBox2: TGroupBox
     Left = 372
-    Top = 16
+    Top = 8
     Width = 316
-    Height = 128
+    Height = 152
     Caption = 'Panel Dimensions'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -2361,7 +2369,7 @@ object Form1: TForm1
     Font.Name = 'Tahoma'
     Font.Style = [fsBold]
     ParentFont = False
-    TabOrder = 6
+    TabOrder = 8
     object Label2: TLabel
       Left = 10
       Top = 30
@@ -2377,7 +2385,7 @@ object Form1: TForm1
     end
     object Label3: TLabel
       Left = 10
-      Top = 65
+      Top = 60
       Width = 110
       Height = 13
       Caption = 'Number of Boards in Y:'
@@ -2390,7 +2398,7 @@ object Form1: TForm1
     end
     object Label8: TLabel
       Left = 10
-      Top = 100
+      Top = 90
       Width = 113
       Height = 13
       Caption = 'Total Panel Dimensions:'
@@ -2403,7 +2411,7 @@ object Form1: TForm1
     end
     object Label9: TLabel
       Left = 270
-      Top = 96
+      Top = 86
       Width = 32
       Height = 21
       Caption = 'mm'
@@ -2414,9 +2422,22 @@ object Form1: TForm1
       Font.Style = [fsBold]
       ParentFont = False
     end
+    object Label14: TLabel
+      Left = 10
+      Top = 120
+      Width = 99
+      Height = 13
+      Caption = 'Panel PCB Document'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+    end
     object YEntry: TEdit
       Left = 140
-      Top = 62
+      Top = 57
       Width = 121
       Height = 22
       Alignment = taCenter
@@ -2430,18 +2451,33 @@ object Form1: TForm1
       Width = 121
       Height = 22
       Alignment = taCenter
-      TabOrder = 2
+      TabOrder = 0
       Text = '1'
       OnChange = CommonChangeCallback
     end
     object PanelDimEntry: TEdit
       Left = 140
-      Top = 97
+      Top = 87
       Width = 121
       Height = 22
       Alignment = taCenter
       Enabled = False
-      TabOrder = 0
+      TabOrder = 2
+    end
+    object PanelPCBDocEntry: TEdit
+      Left = 140
+      Top = 117
+      Width = 160
+      Height = 21
+      Alignment = taCenter
+      Enabled = False
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = [fsBold]
+      ParentFont = False
+      TabOrder = 3
     end
   end
   object PCBEntry: TEdit
@@ -2449,7 +2485,7 @@ object Form1: TForm1
     Top = 34
     Width = 239
     Height = 21
-    TabOrder = 0
+    TabOrder = 9
   end
   object OKButton: TButton
     Left = 547
@@ -2458,7 +2494,7 @@ object Form1: TForm1
     Height = 24
     Caption = 'OK'
     Enabled = False
-    TabOrder = 1
+    TabOrder = 5
     OnClick = OKButtonClick
   end
   object SearchButton: TButton
@@ -2467,7 +2503,7 @@ object Form1: TForm1
     Width = 75
     Height = 25
     Caption = 'Search'
-    TabOrder = 2
+    TabOrder = 11
     OnClick = SearchButtonClick
   end
   object GroupBox1: TGroupBox
@@ -2565,7 +2601,7 @@ object Form1: TForm1
     Font.Name = 'Tahoma'
     Font.Style = []
     ParentFont = False
-    TabOrder = 5
+    TabOrder = 7
   end
   object CancelButton: TButton
     Left = 633
@@ -2577,7 +2613,7 @@ object Form1: TForm1
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Cancel'
-    TabOrder = 7
+    TabOrder = 6
     OnClick = CancelButtonClick
   end
   object PanelWidthEntry: TEdit
@@ -2592,10 +2628,10 @@ object Form1: TForm1
     Font.Name = 'Tahoma'
     Font.Style = [fsBold]
     ParentFont = False
-    TabOrder = 8
+    TabOrder = 10
   end
   object PanelHeightEntry: TEdit
-    Left = 630
+    Left = 625
     Top = 408
     Width = 60
     Height = 29
@@ -2606,7 +2642,7 @@ object Form1: TForm1
     Font.Name = 'Tahoma'
     Font.Style = [fsBold]
     ParentFont = False
-    TabOrder = 9
+    TabOrder = 12
   end
   object RowSpaceEntry: TEdit
     Left = 6
@@ -2620,7 +2656,7 @@ object Form1: TForm1
     Font.Name = 'Tahoma'
     Font.Style = [fsBold]
     ParentFont = False
-    TabOrder = 10
+    TabOrder = 1
     Text = '2'
     OnChange = CommonChangeCallback
   end
@@ -2636,7 +2672,7 @@ object Form1: TForm1
     Font.Name = 'Tahoma'
     Font.Style = [fsBold]
     ParentFont = False
-    TabOrder = 11
+    TabOrder = 2
     Text = '2'
     OnChange = CommonChangeCallback
   end
@@ -2652,7 +2688,7 @@ object Form1: TForm1
     Font.Name = 'Tahoma'
     Font.Style = [fsBold]
     ParentFont = False
-    TabOrder = 12
+    TabOrder = 13
     object xPanelOrigin: TLabel
       Left = 9
       Top = 20
@@ -2708,7 +2744,7 @@ object Form1: TForm1
     Width = 146
     Height = 17
     Caption = 'Don'#39't generate panel title'
-    TabOrder = 13
+    TabOrder = 0
     OnClick = TitleEnableButtonClick
   end
 end
