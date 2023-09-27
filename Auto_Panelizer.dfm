@@ -2470,7 +2470,6 @@ object Form1: TForm1
       Width = 160
       Height = 21
       Alignment = taCenter
-      Enabled = False
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -11
