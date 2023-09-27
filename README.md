@@ -31,6 +31,3 @@ When designing PCBs in Altium Designer, creating panels for fabrication is a com
 
 Contributions to this project are welcome. If you have any ideas for improvements or new features, feel free to fork the repository, make your changes, and submit a pull request.
 
-## License
-
-This project is licensed under the [MIT License](https://chat.openai.com/c/LICENSE). You are free to use, modify, and distribute this script as per the terms of the license.
