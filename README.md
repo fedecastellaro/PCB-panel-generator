@@ -1,6 +1,6 @@
 # Altium PCB Panel Generator Script
 
-This repository contains a DelphiScript for Altium Designer that automates the generation of a panel based on an existing PCB design. This script simplifies the process of creating panels for PCB fabrication, making it more efficient and error-free.
+This repository contains a DelphiScript for Altium Designer that automates the generation of a PCB panel for an existing PCB design. This script simplifies the process of creating panels for PCB fabrication, making it more efficient and error-free.
 
 ![Alt text](images/gui.png?raw=true)
 
