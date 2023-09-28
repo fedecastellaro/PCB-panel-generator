@@ -27,6 +27,12 @@ When designing PCBs in Altium Designer, creating panels for fabrication is a com
 9. Set the position of the embedded PCB boards.
 10. Click OK et voilà.
 
+## TODO
+
+1. Make it possible to run the script from anywhere within altium and that it automatically creates the target document.
+2. Allow the user to change the layer where the panel is drawn.
+3. (Maybe) Make a special customization mode, where all panel variables are accessible to modify (drill distance, fiducials, etc.)
+
 ## Contributing
 
 Contributions to this project are welcome. If you have any ideas for improvements or new features, feel free to fork the repository, make your changes, and submit a pull request.
