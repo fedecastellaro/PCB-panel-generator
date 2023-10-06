@@ -1,20 +1,22 @@
 function SplitAndGetLast(const InputString: string; const Delimiter: Char): string; forward;
-function MilsToMM(Mils: Real): Real; forward;
-procedure calculatePanelDimensions;  forward;
-procedure CreatePCBDocument;   forward;
-procedure BasicViewLayers;   forward;
-procedure BoardLayerOnly;   forward;
-procedure InitializeImages; forward;
+function MilsToMM(Mils: Real): Real;                    forward;
+function CreatePad(xPos : TCoord, yPos : TCoord, HoleSize : TCoord) : IPCB_Pad;     forward;
+function CreateFiducial(Layer : TLayer, xPos : TCoord, yPos : TCoord) : IPCB_Pad;   forward;
+procedure calculatePanelDimensions;                     forward;
+procedure CreatePCBDocument;                            forward;
+procedure BasicViewLayers;                              forward;
+procedure BoardLayerOnly;                               forward;
+procedure InitializeImages;                             forward;
 procedure PlacePolygonCutouts(PanelPCB : IPCB_Board);   forward;
-procedure DeleteAllObjectsOnPCB(PanelPCB : IPCB_Board);   forward;
+procedure DeleteAllObjectsOnPCB(PanelPCB : IPCB_Board); forward;
 procedure CopyBoardOutline(PCB_Board: IPCB_Board, AWidth : Coord; ALayer : TLayer); forward;
-procedure PlaceBoardTitle(PanelPCB : IPCB_Board);   forward;
+procedure PlaceBoardTitle(PanelPCB : IPCB_Board);       forward;
 procedure PlacePanelFiducials(PanelPCB : IPCB_Board);   forward;
-procedure PlacePanelPads (PanelPCB : IPCB_Board);   forward;
-procedure TForm1.SearchButtonClick(Sender: TObject); forward;
-procedure TForm1.OKButtonClick(Sender: TObject);     forward;
-procedure TForm1.XEntryChange(Sender: TObject);      forward;
-procedure TForm1.YEntryChange(Sender: TObject);      forward;
+procedure PlacePanelPads (PanelPCB : IPCB_Board);       forward;
+procedure TForm1.SearchButtonClick(Sender: TObject);    forward;
+procedure TForm1.OKButtonClick(Sender: TObject);        forward;
+procedure TForm1.XEntryChange(Sender: TObject);         forward;
+procedure TForm1.YEntryChange(Sender: TObject);         forward;
 
 const
      eBoardTrackWidth = 10; // 10mils or 0,254mm
@@ -94,8 +96,6 @@ begin
    HeightMM := MilsToMM(BoardBounds.Top - BoardBounds.Bottom);
 end;
 
-{...............................................................................}
-
 function GetEmbeddedBoards(ABoard : IPCB_Board) : TObjectList;
 Var
     EmbedObj   : IPCB_EmbeddedBoard;
@@ -125,8 +125,6 @@ begin
     ABoard.BoardIterator_Destroy(BIterator);
 end;
 
-{..............................................................................}
-
 function AddEmbeddedBoardObj(PCB_Board : IPCB_Board) : IPCB_Embedded;
 var
    BoardBounds : TCoordRect;
@@ -147,7 +145,23 @@ begin
 
 end;
 
-{..............................................................................}
+function CreatePad(xPos : TCoord, yPos : TCoord, HoleSize : TCoord) : IPCB_Pad;
+begin
+     Result := PCBServer.PCBObjectFactory(ePadObject, eNoDimension, eCreate_Default);
+     Result.X := xPos;
+     Result.Y := yPos;
+     Result.SetState_HoleSize(MMsToCoord(3));
+end;
+
+function CreateFiducial(Layer : TLayer, xPos : TCoord, yPos : TCoord) : IPCB_Pad;
+begin
+     Result := PCBServer.PCBObjectFactory(ePadObject, eNoDimension, eCreate_Default);
+     Result.Layer := Layer;
+     Result.X := xPos;
+     Result.Y := yPos;
+     Result.TopXSize := MmToMils(2);
+     Result.TopYSize := MmToMils(2);
+end;
 
 procedure SetCurrentLayer(Board : IPCB_Board, Layer : TLayer);
 begin
@@ -309,7 +323,7 @@ begin
      //We open the PCB document where we are creating the panel.
      Workspace.DM_OpenProject(PanelPcbDocFilePath, True);
      DeleteAllObjectsOnPCB(PanelPCB_Board);
-     //CopyBoardOutline(PCBBoard, MmToMils(0.254), LayerUtils.MechanicalLayer(eBoardLayer));
+     if CopyBoardButton.Checked then CopyBoardOutline(PCBBoard, MmToMils(0.254), LayerUtils.MechanicalLayer(eBoardLayer));
      ResizePCBBoard(PanelPCB_Board);
      AddEmbeddedBoard(PanelPCB_Board);
      PlacePanelPads(PanelPCB_Board);
@@ -563,65 +577,44 @@ End;
 
 procedure PlacePanelPads (PanelPCB : IPCB_Board);
 var
-  Pad1, Pad2, Pad3, Pad4: IPCB_Pad;
+  Pad: IPCB_Pad;
 
 begin
-  // This is also declared in
+  Pad := CreatePad(MmToMils(5), MmToMils(5), MMsToCoord(3));
+  PanelPCB.AddPCBObject(Pad);
 
-  Pad1 := PCBServer.PCBObjectFactory(ePadObject, eNoDimension, eCreate_Default);
-  Pad1.X := MmToMils(5);
-  Pad1.Y := MmToMils(5);
-  Pad1.SetState_HoleSize(MMsToCoord(3));
+  Pad := CreatePad(MmToMils(WidthPanel - 5), MmToMils(5), MMsToCoord(3));
+  PanelPCB.AddPCBObject(Pad);
 
-  Pad2 := PCBServer.PCBObjectFactory(ePadObject, eNoDimension, eCreate_Default);
-  Pad2.X := MmToMils(WidthPanel -5);
-  Pad2.Y := MmToMils(5);
-  Pad2.SetState_HoleSize(MMsToCoord(3));
+  Pad := CreatePad(MmToMils(WidthPanel - 5), MmToMils(HeightPanel - 5), MMsToCoord(3));
+  PanelPCB.AddPCBObject(Pad);
 
-  Pad3 := PCBServer.PCBObjectFactory(ePadObject, eNoDimension, eCreate_Default);
-  Pad3.X := MmToMils(WidthPanel - 5);
-  Pad3.Y := MmToMils(HeightPanel - 5);
-  Pad3.SetState_HoleSize(MMsToCoord(3));
+  Pad := CreatePad(MmToMils(5), MmToMils(HeightPanel - 5), MMsToCoord(3));
+  PanelPCB.AddPCBObject(Pad);
 
-  Pad4 := PCBServer.PCBObjectFactory(ePadObject, eNoDimension, eCreate_Default);
-  Pad4.X := MmToMils(5);
-  Pad4.Y := MmToMils(HeightPanel - 5);
-  Pad4.SetState_HoleSize(MMsToCoord(3));
-
-  PanelPCB.AddPCBObject(Pad1);
-  PanelPCB.AddPCBObject(Pad2);
-  PanelPCB.AddPCBObject(Pad3);
-  PanelPCB.AddPCBObject(Pad4);
 end;
 
 procedure PlacePanelFiducials (PanelPCB : IPCB_Board);
 var
-   Fid1, Fid2, Fid3: IPCB_Pad;
+   Fid : IPCB_Pad;
 begin
-   Fid1 := PCBServer.PCBObjectFactory(ePadObject, eNoDimension, eCreate_Default);
-   Fid1.Layer := eTopLayer;
-   Fid1.X := MmToMils(5+10);
-   Fid1.Y := MmToMils(5);
-   Fid1.TopXSize := MmToMils(2);
-   Fid1.TopYSize := MmToMils(2);
+   Fid := CreateFiducial(eTopLayer, MmToMils(5+10), MmToMils(5));
+   PanelPCB.AddPCBObject(Fid);
 
-   Fid2 := PCBServer.PCBObjectFactory(ePadObject, eNoDimension, eCreate_Default);
-   Fid2.Layer := eTopLayer;
-   Fid2.X := MmToMils(WidthPanel - 5 - 10);
-   Fid2.Y := MmToMils(5);
-   Fid2.TopXSize := MmToMils(2);
-   Fid2.TopYSize := MmToMils(2);
+   Fid := CreateFiducial(eBottomLayer, MmToMils(5+10), MmToMils(5));
+   PanelPCB.AddPCBObject(Fid);
 
-   Fid3 := PCBServer.PCBObjectFactory(ePadObject, eNoDimension, eCreate_Default);
-   Fid3.Layer := eTopLayer;
-   Fid3.X := MmToMils(WidthPanel - 5 - 20);
-   Fid3.Y := MmToMils(HeightPanel - 5);
-   Fid3.TopXSize := MmToMils(2);
-   Fid3.TopYSize := MmToMils(2);
+   Fid := CreateFiducial(eTopLayer, MmToMils(WidthPanel - 5 - 10), MmToMils(5));
+   PanelPCB.AddPCBObject(Fid);
 
-   PanelPCB.AddPCBObject(Fid1);
-   PanelPCB.AddPCBObject(Fid2);
-   PanelPCB.AddPCBObject(Fid3);
+   Fid := CreateFiducial(eBottomLayer, MmToMils(WidthPanel - 5 - 10), MmToMils(5));
+   PanelPCB.AddPCBObject(Fid);
+
+   Fid := CreateFiducial(eTopLayer, MmToMils(WidthPanel - 5 - 20), MmToMils(HeightPanel - 5));
+   PanelPCB.AddPCBObject(Fid);
+
+   Fid := CreateFiducial(eBottomLayer, MmToMils(WidthPanel - 5 - 20), MmToMils(HeightPanel - 5));
+   PanelPCB.AddPCBObject(Fid);
 end;
 
 procedure PlacePolygonCutouts (PanelPCB : IPCB_Board);
@@ -791,7 +784,6 @@ end;
 
 procedure TForm1.CommonChangeCallback(Sender: TObject);
 var
-   IntValue: Integer;
    FloatValue : Real;
 begin
      if TryStrToFloat(Sender.Text, FloatValue) then
@@ -806,6 +798,7 @@ begin
         OKButton.Enabled := False;
       end;
 end;
+
 
 
 

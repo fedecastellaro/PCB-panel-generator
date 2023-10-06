@@ -14,6 +14,7 @@ object Form1: TForm1
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  WindowState = wsMinimized
   OnCreate = Form1Create
   PixelsPerInch = 96
   TextHeight = 13
@@ -2353,9 +2354,9 @@ object Form1: TForm1
   object Label15: TLabel
     Left = 4
     Top = 691
-    Width = 126
+    Width = 108
     Height = 13
-    Caption = 'Written by: fedecastellaro'
+    Caption = 'Written by: fcastellaro'
   end
   object GroupBox2: TGroupBox
     Left = 372
@@ -2739,11 +2740,19 @@ object Form1: TForm1
   end
   object TitleEnableButton: TCheckBox
     Left = 22
-    Top = 145
+    Top = 137
     Width = 146
     Height = 17
     Caption = 'Don'#39't generate panel title'
     TabOrder = 0
     OnClick = TitleEnableButtonClick
+  end
+  object CopyBoardButton: TCheckBox
+    Left = 22
+    Top = 157
+    Width = 218
+    Height = 17
+    Caption = 'Copy original board to Mech21 (BETA)'
+    TabOrder = 14
   end
 end
