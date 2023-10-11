@@ -16,7 +16,7 @@ When designing PCBs in Altium Designer, creating panels for fabrication is a com
 
 ## Usage
 
-![Alt Text](./images/your-gif.gif)
+![Alt Text](./images/example.gif)
 
 1. Clone or download this repository to your local machine.
 2. Open Altium Designer.
