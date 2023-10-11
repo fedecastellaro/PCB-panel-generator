@@ -2,7 +2,6 @@ object Form1: TForm1
   AlignWithMargins = True
   Left = 0
   Top = 0
-  BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Auto Panelizer '
   ClientHeight = 706
@@ -14,7 +13,7 @@ object Form1: TForm1
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
-  WindowState = wsMinimized
+  PopupMode = pmAuto
   OnCreate = Form1Create
   PixelsPerInch = 96
   TextHeight = 13

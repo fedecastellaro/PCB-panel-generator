@@ -126,9 +126,6 @@ begin
 end;
 
 function AddEmbeddedBoardObj(PCB_Board : IPCB_Board) : IPCB_Embedded;
-var
-   BoardBounds : TCoordRect;
-
 begin
     Result := PCBServer.PCBObjectFactory(eEmbeddedBoardObject, eNoDimension, eCreate_Default);
     Result.DocumentPath := FileName;
@@ -142,7 +139,6 @@ begin
     Result.YLocation  := MmToMils(yPanelOrigin);
 
     PCB_Board.AddPCBObject(Result);
-
 end;
 
 function CreatePad(xPos : TCoord, yPos : TCoord, HoleSize : TCoord) : IPCB_Pad;
@@ -163,6 +159,17 @@ begin
      Result.TopYSize := MmToMils(2);
 end;
 
+function CreateTrack(StartPoint : TPoint, EndPoint : TPoint, Width: TCoord, Layer : TLayer) : IPCB_Track;
+begin
+     Result := PCBServer.PCBObjectFactory(eTrackObject, eNoDimension, eCreate_Default);
+     Result.Layer := Layer;
+     Result.x1 := StartPoint.X;
+     Result.y1 := StartPoint.Y;
+     Result.x2 := EndPoint.X;
+     Result.y2 := EndPoint.Y;
+     Result.Width := Width;
+end;
+
 procedure SetCurrentLayer(Board : IPCB_Board, Layer : TLayer);
 begin
      Board.CurrentLayer := Layer;
@@ -176,79 +183,34 @@ begin
     EmbeddedBoardList := GetEmbeddedBoards(PCBBoard);
 
     AddEmbeddedBoardObj(PanelPCB);
-
-    {if EmbeddedBoardList.Count < 1 then
-    begin
-        AddEmbeddedBoardObj(PanelPCB);
-    end
-
-    else
-    begin
-        ShowWarning('document already has embedded boards !  ' + IntToStr(EmbeddedBoardList.Count) );
-    end;}
 end;
 
 procedure ResizePCBBoard(PanelPCB: IPCB_Board);
 Var
-    Track1, Track2, Track3, Track4 : IPCB_Track;
-    Iterator: IPCB_BoardIterator;
-    CurrentObject: IPCB_Track;
+    Track : IPCB_Track;
+    xDimension : IPCB_Dimension;
     ALayer : TLayer;
-    LU : IPCB_LayerUtils;
-    LayerObject : IPCB_MechanicalLayer;
-
+    startPoint, endPoint : TPoint;
 
 Begin
-     // Used to change xorigin of pcb
-    //PanelPCB.XOrigin := MmToMils(10);
-    //PanelPCB.YOrigin := MmToMils(10);
     PCBServer.PreProcess;
-
     ALayer := LayerUtils.MechanicalLayer(eBoardLayer);
-    //ShowInfo(String2Layer('Mechanical Layer 21'));
 
-    //ShowInfo(LayerObject.Name);
-    //ShowInfo(Layer2String(ALayer));
+    Track := CreateTrack( Point(0, 0), Point(MmToMils(WidthPanel), 0), MilsToCoord(eBoardTrackWidth), ALayer);
+    PanelPCB.AddPCBObject(Track);
+    Track.Selected := true;
 
-    Track1 := PCBServer.PCBObjectFactory(eTrackObject, eNoDimension, eCreate_Default);
-    Track1.x1 := 0;
-    Track1.y1 := 0;
-    Track1.x2 := MmToMils(WidthPanel);
-    Track1.y2 := 0;
-    Track1.Layer := ALayer;
-    Track1.Width := MilsToCoord(eBoardTrackWidth);
-    PanelPCB.AddPCBObject(Track1);
-    Track1.Selected := true;
+    Track := CreateTrack( Point(MmToMils(WidthPanel), 0), Point(MmToMils(WidthPanel), MmToMils(HeightPanel)), MilsToCoord(eBoardTrackWidth), ALayer);
+    PanelPCB.AddPCBObject(Track);
+    Track.Selected := true;
 
-    Track2 := PCBServer.PCBObjectFactory(eTrackObject, eNoDimension, eCreate_Default);
-    Track2.x1 := MmToMils(WidthPanel);
-    Track2.y1 := 0;
-    Track2.x2 := MmToMils(WidthPanel);
-    Track2.y2 := MmToMils(HeightPanel);
-    Track2.Layer := ALayer;
-    Track2.Width := MilsToCoord(eBoardTrackWidth);
-    PanelPCB.AddPCBObject(Track2);
-    Track2.Selected := true;
+    Track := CreateTrack( Point(MmToMils(WidthPanel), MmToMils(HeightPanel)), Point(0, MmToMils(HeightPanel)), MilsToCoord(eBoardTrackWidth), ALayer);
+    PanelPCB.AddPCBObject(Track);
+    Track.Selected := true;
 
-    Track3 := PCBServer.PCBObjectFactory(eTrackObject, eNoDimension, eCreate_Default);
-    Track3.x1 := MmToMils(WidthPanel);
-    Track3.y1 := MmToMils(HeightPanel);
-    Track3.x2 := 0;
-    Track3.y2 := MmToMils(HeightPanel);
-    Track3.Layer := ALayer;
-    Track3.Width := MilsToCoord(eBoardTrackWidth);
-    PanelPCB.AddPCBObject(Track3);
-    Track3.Selected := true;
-
-    Track4 := PCBServer.PCBObjectFactory(eTrackObject, eNoDimension, eCreate_Default);
-    Track4.x1 := 0;
-    Track4.y1 := MmToMils(HeightPanel);
-    Track4.x2 := 0;
-    Track4.y2 := 0;
-    Track4.Layer := ALayer;
-    Track4.Width := MilsToCoord(eBoardTrackWidth);
-    PanelPCB.AddPCBObject(Track4);
-    Track4.Selected := true;
+    Track := CreateTrack( Point(0, MmToMils(HeightPanel)), Point(0, 0), MilsToCoord(eBoardTrackWidth), ALayer);
+    PanelPCB.AddPCBObject(Track);
+    Track.Selected := true;
 
     // Display (unconditionally) the layer selected by the user.
     PanelPCB.LayerIsDisplayed[ALayer] := True;
@@ -325,6 +287,7 @@ begin
      DeleteAllObjectsOnPCB(PanelPCB_Board);
      if CopyBoardButton.Checked then CopyBoardOutline(PCBBoard, MmToMils(0.254), LayerUtils.MechanicalLayer(eBoardLayer));
      ResizePCBBoard(PanelPCB_Board);
+
      AddEmbeddedBoard(PanelPCB_Board);
      PlacePanelPads(PanelPCB_Board);
      PlacePanelFiducials(PanelPCB_Board);
